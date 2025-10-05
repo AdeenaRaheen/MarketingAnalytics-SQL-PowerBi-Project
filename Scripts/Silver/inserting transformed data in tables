@@ -1,0 +1,51 @@
+-- Transformation Query for Customers
+TRUNCATE TABLE silver.Customers;
+INSERT INTO silver.Customers (
+    customer_id, full_name, email, join_date, region, age_group, segment
+)
+SELECT
+    customer_id,
+    first_name + ' ' + last_name AS full_name,
+    email,
+    join_date,
+    ISNULL(region, 'Unknown') AS region, -- Cleaning logic applied here
+    age_group,
+    segment
+FROM
+    bronze.Customers;
+;
+INSERT INTO silver.Transactions (
+    transaction_id, customer_id, purchase_date, transaction_amount, product_category, is_outlier, created_at
+)
+SELECT
+    transaction_id,
+    customer_id,
+    purchase_date,
+    amount,
+    product_category,
+    CASE WHEN amount > 500 THEN 1 ELSE 0 END AS is_outlier, -- Transformation logic applied here
+    GETDATE()
+FROM
+    bronze.Transactions;
+TRUNCATE TABLE silver.Marketing_Campaigns;
+INSERT INTO silver.Marketing_Campaigns (
+    campaign_id, transaction_id, campaign_date, channel, cost_per_event, campaign_name, created_at)
+SELECT
+    -- Direct Mapping for Core Fields
+    M.campaign_id,
+    M.transaction_id,
+    M.campaign_date,
+    
+    -- Transformation: Standardize Channel Names (e.g., ensure all 'Social Media' are consistent)
+    CASE 
+        WHEN M.channel LIKE '%Social%' THEN 'Social Media'
+        WHEN M.channel LIKE '%Search%' THEN 'Paid Search' -- Rename for reporting clarity
+        WHEN M.channel LIKE '%Email%' THEN 'Email Marketing'
+        ELSE M.channel -- Catch 'Organic' and any others
+    END AS channel,
+    
+    M.cost_per_event,
+    M.campaign_name,
+    GETDATE()
+FROM
+    bronze.Marketing_Campaigns AS M
