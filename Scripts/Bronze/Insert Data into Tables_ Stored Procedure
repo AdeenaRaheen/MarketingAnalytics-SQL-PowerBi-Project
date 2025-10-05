@@ -1,0 +1,70 @@
+CREATE OR ALTER Procedure Bronze.load_Bronze AS
+BEGIN
+	DECLARE @start_time DATETIME, @end_time DATETIME, @start_batch_time DATETIME, @end_batch_time DATETIME;
+	BEGIN TRY
+		SET @start_batch_time = GETDATE ();
+		PRINT '==================================================================';
+		PRINT 'LOADING BRONZE LAYER';
+		PRINT '==================================================================';
+
+		PRINT '------------------------------------------------------------------';
+		PRINT 'LOADING bronze.Customers TABLE';
+		PRINT '------------------------------------------------------------------';
+
+		SET @start_time = GETDATE();
+		PRINT '>>TRUNCATING TABLE:bronze.Customers';
+		TRUNCATE Table bronze.Customers;
+
+		PRINT '>>INSERTING DATA INTO:bronze.Customers';
+		BULK INSERT bronze.Customers
+		From 'C:\Users\Rabeesa Arveen\Downloads\sql-bi project\customers.csv'
+		WITH (
+		FirstRow = 2,
+		FieldTerminator = ',',
+		TABLOCK
+		);
+		SET @end_time = GETDATE ();
+		PRINT '>> LOADING DURATION:'+CAST(DATEDIFF(second,@start_time,@end_time)AS NVARCHAR)+'seconds';
+		PRINT '----------'
+
+		SET @start_time = GETDATE();
+		PRINT '>>TRUNCATING TABLE:bronze.Marketing_Campaigns';
+		TRUNCATE Table bronze.Marketing_Campaigns;
+
+		PRINT '>>INSERTING DATA INTO:bronze.Marketing_Campaigns';
+		BULK INSERT bronze.Marketing_Campaigns
+		FROM 'C:\Users\Rabeesa Arveen\Downloads\sql-bi project\marketing_campaigns.csv'
+		WITH (
+		FirstRow = 2,
+		FieldTerminator = ',',
+		TABLOCK
+		);
+		SET @end_time = GETDATE ();
+		PRINT '>> LOADING DURATION:'+CAST(DATEDIFF(second,@start_time,@end_time)AS NVARCHAR)+'seconds';
+		PRINT '----------'
+
+		SET @start_time = GETDATE();
+		PRINT '>>TRUNCATING TABLE:bronze.Transactions';
+		TRUNCATE Table Bronze.bronze.Transactions;
+		PRINT '>>INSERTING DATA INTO:bronze.Transactions';
+		BULK INSERT bronze.Transactions
+		FROM 'C:\Users\Rabeesa Arveen\Downloads\sql-bi project\transactions.csv'
+		WITH (
+		FIRSTROW = 2,
+		FieldTerminator = ',',
+		TABLOCK
+		);
+		PRINT '=================================';
+		PRINT 'LOADING BRONZE LAYER IS COMPLETED';
+		PRINT '    TOTAL LOAD DURATION: ' + CAST (DATEDIFF (second, @start_batch_time, @end_batch_time) AS NVARCHAR) + 'seconds';
+		PRINT '================================='
+	END TRY
+	BEGIN CATCH
+	PRINT '=====================================================';
+	PRINT 'ERROR OCCURED DURING LOADING BRONZE LAYER';
+	PRINT 'ERROR MESSAGE' +  ERROR_MESSAGE();
+	PRINT 'ERROR MESSAGE' +  CAST (ERROR_MESSAGE () AS NVARCHAR);
+	PRINT 'ERROR MESSAGE' +  CAST (ERROR_STATE () AS NVARCHAR);
+	PRINT '=====================================================';
+	END CATCH
+End
