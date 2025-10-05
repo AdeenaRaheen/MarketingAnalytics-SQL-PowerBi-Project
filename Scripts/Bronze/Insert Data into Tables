@@ -1,0 +1,27 @@
+TRUNCATE TABLE bronze.Customers
+;
+BULK INSERT bronze.Customers
+From 'C:\Users\Rabeesa Arveen\Downloads\sql-bi project\Customers.csv'
+		WITH (
+		FirstRow = 2,
+		FieldTerminator = ',',
+		TABLOCK
+		);
+TRUNCATE TABLE bronze.Marketing_Campaigns
+;
+BULK INSERT bronze.Marketing_Campaigns
+From 'C:\Users\Rabeesa Arveen\Downloads\sql-bi project\Marketing_Campaigns.csv'
+		WITH (
+		FirstRow = 2,
+		FieldTerminator = ',',
+		TABLOCK
+		);
+TRUNCATE TABLE bronze.Transactions
+;
+BULK INSERT bronze.Transactions
+From 'C:\Users\Rabeesa Arveen\Downloads\sql-bi project\Transactions.csv'
+		WITH (
+		FirstRow = 2,
+		FieldTerminator = ',',
+		TABLOCK
+		)
