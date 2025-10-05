@@ -1,0 +1,49 @@
+-- DDL: Create the silver.Customers table
+IF OBJECT_ID('silver.Customers', 'U') IS NOT NULL
+    DROP TABLE silver.Customers;
+GO
+CREATE TABLE silver.Customers (
+   customer_id INT PRIMARY KEY,
+    full_name VARCHAR(101) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    join_date DATE,
+    region VARCHAR(50) NOT NULL, -- Now NOT NULL due to cleaning
+    age_group VARCHAR(10),
+    segment VARCHAR(50),
+    created_at DATETIME DEFAULT GETDATE()
+);
+GO
+
+-- DDL: Create the silver.Transactions Table
+IF OBJECT_ID('silver.Transactions', 'U') IS NOT NULL
+    DROP TABLE silver.Transactions;
+GO
+CREATE TABLE silver.Transactions (
+   transaction_id INT PRIMARY KEY,
+    customer_id INT NOT NULL,
+    purchase_date DATETIME,
+    transaction_amount DECIMAL(10, 2),
+    product_category VARCHAR(50),
+    is_outlier BIT DEFAULT 0, -- Flag added
+    created_at DATETIME DEFAULT GETDATE()
+);
+GO
+
+-- DDL: Create the silver.Marketing_Campaigns Table
+IF OBJECT_ID('silver.Marketing_Campaigns', 'U') IS NOT NULL
+    DROP TABLE silver.Marketing_Campaigns;
+GO
+CREATE TABLE silver.Marketing_Campaigns (
+     campaign_id INT PRIMARY KEY,
+    transaction_id INT NOT NULL,
+    campaign_date DATETIME,
+    channel VARCHAR(50) NOT NULL, -- Ensure Channel is always present
+    cost_per_event DECIMAL(5, 2),
+    campaign_name VARCHAR(100),
+    -- Key Change: We enforce the relationship here in the Silver Layer
+    CONSTRAINT FK_Silver_Transaction 
+        FOREIGN KEY (transaction_id) 
+        REFERENCES Silver.Transactions(transaction_id),
+    created_at DATETIME DEFAULT GETDATE()
+);
+GO
